@@ -19,6 +19,13 @@ async def ocr(file: UploadFile = File(...)):
     pdf_stream = io.BytesIO(pdf_file)
     reader = pdf.PdfReader(pdf_stream)
     no = len(reader.pages)
+
+    if no > 4:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="no of pages must be less than or equal to 4",
+        )
+
     return {
         "filename": filename,
         "page_count": no
