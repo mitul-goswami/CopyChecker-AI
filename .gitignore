@@ -2,3 +2,4 @@
 Pipfile
 Pipfile.lock
 Workflow Diagram (2).png
+__pycache__/
