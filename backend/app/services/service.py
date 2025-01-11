@@ -1,31 +1,40 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 import requests
-import io
-from pdf2image import convert_from_bytes
 import os
 from dotenv import load_dotenv
+from ironpdf import *
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI()
 
-API_KEY=os.getenv("CLOUD_VISION_API")
+# Get the Google Cloud Vision API key from environment variables
+API_KEY = os.getenv("CLOUD_VISION_API_KEY")
 
 @app.post("/detect-text/")
 async def detect_text(file: UploadFile = File(...)):
     # Read the PDF file
     pdf_content = await file.read()
 
-    # Convert PDF to images
-    images = convert_from_bytes(pdf_content)
+    # Save the PDF content to a temporary file
+    temp_pdf_path = "temp.pdf"
+    with open(temp_pdf_path, "wb") as temp_pdf_file:
+        temp_pdf_file.write(pdf_content)
 
-    # Store the text results
+    # Convert PDF to images using IronPDF
+    pdf = PdfDocument.FromFile(temp_pdf_path)
     text_results = []
 
-    for image in images:
-        # Convert the image to bytes
+    for i in range(len(pdf)):
+        # Render the page to an image
+        image = pdf[i].Render()
+        
+        # Save the image to a byte array
         img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
+        image.SaveAsPng(img_byte_arr)
+        img_byte_arr.seek(0)
 
         # Prepare the request for the Vision API
         url = f"https://vision.googleapis.com/v1/images:annotate?key={API_KEY}"
@@ -34,7 +43,7 @@ async def detect_text(file: UploadFile = File(...)):
             "requests": [
                 {
                     "image": {
-                        "content": img_byte_arr.decode('ISO-8859-1')  # Encode image bytes to base64
+                        "content": img_byte_arr.getvalue().decode('ISO-8859-1')  # Encode image bytes to base64
                     },
                     "features": [
                         {
@@ -54,6 +63,9 @@ async def detect_text(file: UploadFile = File(...)):
                 text_results.append(detected_text)
         else:
             return JSONResponse(status_code=response.status_code, content={"error": response.text})
+
+    # Clean up the temporary PDF file
+    os.remove(temp_pdf_path)
 
     return {"detected_text": text_results}
 
