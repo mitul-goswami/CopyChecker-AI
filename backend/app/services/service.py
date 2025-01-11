@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 import requests
 import os
+import io
 from dotenv import load_dotenv
 from ironpdf import *
 
@@ -24,7 +25,7 @@ async def detect_text(file: UploadFile = File(...)):
         temp_pdf_file.write(pdf_content)
 
     # Convert PDF to images using IronPDF
-    pdf = PdfDocument.FromFile(temp_pdf_path)
+    pdf = PdfDocument(temp_pdf_path)
     text_results = []
 
     for i in range(len(pdf)):
