@@ -1,138 +1,104 @@
 import os
+from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain_community.document_loaders import ImageLoader
+#from langchain_community.document_loaders import ImageLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain.prompts import PromptTemplate
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_mongodb import MongoDBAtlasVectorSearch
+#from langchain.prompts import PromptTemplate
+from langchain.chains.combine_documents import create_stuff_documents_chain
+#from langchain_mongodb.index import create_fulltext_search_index
+from pymongo import MongoClient
+#from langchain_mongodb.retrievers.hybrid_search import MongoDBAtlasHybridSearchRetriever
 
+load_dotenv()
 # Load Groq API key from environment variables
 groq_api_key = os.getenv('GROQ_API_KEY')
+gemini_api_key = os.getenv('GEMINI_API_KEY')
+atlas_connection_string = os.getenv('ATLAS_CONNECTION_STRING')
+tracing_v2=os.getenv("LANGCHAIN_TRACING_V2")
+langchain_api_key=os.getenv("LANGCHAIN_API_KEY")
 
 # Initialize Groq client
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
+embeddings = GoogleGenerativeAIEmbeddings(google_api_key=gemini_api_key, model="models/embedding-001")
+client = MongoClient(atlas_connection_string)
 
+DB_NAME = "langchain_test_db"
+COLLECTION_NAME = "langchain_test_vectorstores"
+ATLAS_VECTOR_SEARCH_INDEX_NAME = "langchain-test-index-vectorstores"
+
+MONGODB_COLLECTION = client[DB_NAME][COLLECTION_NAME]
+
+vector_store = MongoDBAtlasVectorSearch(
+    collection=MONGODB_COLLECTION,
+    embedding=embeddings,
+    index_name=ATLAS_VECTOR_SEARCH_INDEX_NAME,
+    relevance_score_fn="cosine",
+)
+
+# Create vector search index on the collection
+# Since we are using the default OpenAI embedding model (ada-v2) we need to specify the dimensions as 1536
+#vector_store.create_vector_search_index(dimensions=768)
 # Function to load PDFs and images
-def load_documents_and_images(pdf_directory, image_directory):
+def load_documents_and_images(pdf_directory):
     # Load PDFs
     pdf_loader = PyPDFDirectoryLoader(pdf_directory)
+    print(pdf_loader)
     pdf_docs = pdf_loader.load()
 
-    # Load images
-    image_loader = ImageLoader(image_directory)
-    image_docs = image_loader.load()
-
-    return pdf_docs, image_docs
+    return pdf_docs
 
 # Function to process documents and create embeddings
-def process_documents(pdf_docs, image_docs):
+def process_documents(pdf_docs):
     # Combine documents
-    all_docs = pdf_docs + image_docs
+    all_docs = pdf_docs
 
     # Split documents into chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     final_documents = text_splitter.split_documents(all_docs)
 
-    # Create FAISS vector store
-    vector_store = FAISS.from_documents(final_documents)
-
-    return vector_store
+    vector_store.add_documents(documents=final_documents)#, ids=uuids)
 
 # Example usage
-pdf_directory = "./path_to_pdfs"
-image_directory = "./path_to_images"
-pdf_docs, image_docs = load_documents_and_images(pdf_directory, image_directory)
-vector_store = process_documents(pdf_docs, image_docs)
+pdf_directory = os.getenv('FILE_PATH')
 
-# Define a prompt template for querying
-prompt_template = PromptTemplate(template="Answer the following question based on the context: {context}\nQuestion: {question}")
+pdf_docs = load_documents_and_images(pdf_directory=pdf_directory)
+print(pdf_docs)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+final_documents = text_splitter.split_documents(pdf_docs)
 
-# Example query
-query = "What is depicted in the uploaded images?"
-response = llm.invoke({"context": vector_store, "question": query})
+vector_store.add_documents(documents=final_documents)
 
-print(response)
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import create_retrieval_chain
 
-"""
-from langchain_mongodb import MongoDBAtlasVectorSearch
-from langchain_openai import OpenAIEmbeddings
-
-# Create the vector store
-vector_store = MongoDBAtlasVectorSearch.from_connection_string(
-   connection_string = ATLAS_CONNECTION_STRING,
-   embedding = OpenAIEmbeddings(disallowed_special=()),
-   namespace = "sample_mflix.embedded_movies",
-   text_key = "plot",
-   embedding_key = "plot_embedding",
-   relevance_score_fn = "dotProduct"
-)
-
-vector_store.create_vector_search_index(
-   dimensions = 1536
-)
-
-from langchain_mongodb.index import create_fulltext_search_index
-from pymongo import MongoClient
-
-# Connect to your cluster
-client = MongoClient(ATLAS_CONNECTION_STRING)
-
-# Use helper method to create the search index
-create_fulltext_search_index(
-   collection = client["sample_mflix"]["embedded_movies"],
-   field = "plot",
-   index_name = "search_index"
-)
-
-from langchain_mongodb.retrievers.hybrid_search import MongoDBAtlasHybridSearchRetriever
-
-# Initialize the retriever
-retriever = MongoDBAtlasHybridSearchRetriever(
-    vectorstore = vector_store,
-    search_index_name = "search_index",
-    top_k = 5,
-    fulltext_penalty = 50,
-    vector_penalty = 50
-)
-
-# Define your query
-query = "time travel"
-
-# Print results
-documents = retriever.invoke(query)
-for doc in documents:
-   print("Title: " + doc.metadata["title"])
-   print("Plot: " + doc.page_content)
-   print("Search score: {}".format(doc.metadata["fulltext_score"]))
-   print("Vector Search score: {}".format(doc.metadata["vector_score"]))
-   print("Total score: {}\n".format(doc.metadata["fulltext_score"] + doc.metadata["vector_score"]))
-
-
-"""
-
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import  RunnablePassthrough
-from langchain_openai import ChatOpenAI
-
-# Define a prompt template
-template = """
-   Use the following pieces of context to answer the question at the end.
-   {context}
-   Question: Can you recommend some movies about {query}?
-"""
-prompt = PromptTemplate.from_template(template)
-model = ChatOpenAI()
+prompt=ChatPromptTemplate.from_template("""
+                    You are a university professer. 
+                    Your role is to correct and evaluation students' answer paper. 
+                    You will receive university answer sheet & evaluation metrics to help you evaluate the papers. 
+                    You will be rewarded generously for doing a great evaluation.
+                    <context>
+                    {context}
+                    </context>
+                    Question: {input}
+            """)
 
 # Construct a chain to answer questions on your data
-chain = (
-   {"context": retriever, "query": RunnablePassthrough()}
-   | prompt
-   | model
-   | StrOutputParser()
-)
+document_chain = create_stuff_documents_chain(llm, prompt)
+retriever = vector_store.as_retriever()
+#    search_type="similarity_score_threshold",
+#    search_kwargs={"k": 1, "score_threshold": 0.2},
+#)
+retrieval_chain = create_retrieval_chain(
+                            retriever,
+                            document_chain,
+                        )
 
 # Prompt the chain
-query = "time travel"
-answer = chain.invoke(query)
-print(answer)
+query = "Can you print all the text in your given context"
+retrieval_chain.invoke({"input": query})
+#print(answer)
+
+print("DOne")
