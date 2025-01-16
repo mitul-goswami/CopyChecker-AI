@@ -6,3 +6,4 @@ temp.pdf
 links.txt
 /dataset
 __pycache__/
+.gitignore
