@@ -28,9 +28,9 @@ async def detect_text(file: UploadFile = File(...)):
     pdf = PdfDocument(temp_pdf_path)
     text_results = []
 
-    for i in range(len(pdf)):
+    for i in range(pdf.PageCount):
         # Render the page to an image
-        image = pdf[i].Render()
+        image = pdf.get_Pages(i).Render()
         
         # Save the image to a byte array
         img_byte_arr = io.BytesIO()
