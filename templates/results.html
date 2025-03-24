@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Reduced Top Banner Height & Fully Centered Text -->
+<div class="results-header py-2 d-flex justify-content-center align-items-center">
+    <div class="container text-center">
+        <h2 class="results-title">Evaluation Report</h2>
+        <div class="divider mx-auto"></div>
+    </div>
+</div>
+
+<!-- New Evaluation Header Component -->
+<header class="evaluation-header">
+    <div class="evaluation-container">
+        <div class="evaluation-title"></div>
+        <div class="progress-container">
+            <div class="progress-fill" 
+     style="width: {{ results.percentage|round(0) }}%">
+    <div class="progress-text">
+        {{ results.percentage|round(0) }}
+    </div>
+</div>
+
+    </div>
+</header>
+
+<div class="results-section">
+    <div class="container">
+        <div class="results-score-container border-bottom pb-4 mb-4">
+            <div class="row g-4">
+                <!-- Score Cards -->
+                <div class="col-lg-4">
+                    <div class="score-card total-score">
+                        <div class="card-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h4>Total Score</h4>
+                        <div class="score-display">
+                            {{ results.total_score }}<span>/{{ results.full_marks }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="score-card percentage-score">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Percentage</h4>
+                        <div class="score-display">
+                            {{ results.percentage|round(2) }}<span>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="score-card questions-count">
+                        <div class="card-icon">
+                            <i class="fas fa-list-ol"></i>
+                        </div>
+                        <h4>Questions Evaluated</h4>
+                        <div class="score-display">
+                            {{ results.grades|length }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Accordion -->
+        <div class="results-accordion">
+            <div class="accordion" id="questionsAccordion">
+                {% for q_num, data in results.grades.items() %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <!-- Keep question badge and show only "Score - x/y" -->
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#question{{ q_num }}">
+                            <span class="badge bg-primary me-2">Q{{ q_num }}</span>
+                            Score - {{ data.score }}/{{ data.max_marks }}
+                        </button>
+                    </h2>
+                    <div id="question{{ q_num }}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div class="feedback-card">
+                                <h5><i class="fas fa-comment-dots me-2"></i>Detailed Feedback</h5>
+                                <div class="feedback-content">
+                                    {{ data.feedback }}
+                                </div>
+                                <div class="progress mt-3">
+                                    <div class="progress-bar bg-gradient" 
+                                         role="progressbar" 
+                                         style="width: {{ (data.score/data.max_marks)*100 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

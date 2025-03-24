@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section" style="padding: 40px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="hero-title animate__animated animate__fadeInDown">
+                    CopyCheckerAI
+                </h1>
+                <p class="hero-subtitle">AI-Powered Answer Sheet Assessment System</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="upload-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-7 col-lg-8">
+                <div class="upload-card shadow-lg">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0 text-white">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>
+                            Upload Documents
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-key me-2"></i>
+                                    Model Answer Key
+                                </label>
+                                <div class="file-input-container">
+                                    <input type="file" class="form-control" id="model_answer" name="model_answer" required>
+                                    <div class="input-overlay">
+                                        <i class="fas fa-file-pdf"></i>
+                                        <span>Browse PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-user-graduate me-2"></i>
+                                    Student Answer Sheet
+                                </label>
+                                <div class="file-input-container">
+                                    <input type="file" class="form-control" id="student_answer" name="student_answer" required>
+                                    <div class="input-overlay">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span>Browse PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg btn-gradient">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Evaluate Now
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
