@@ -1,172 +1,161 @@
-# CopyChecker-AI
+#  CopyChecker-AI  
+### AI-Powered Intelligent Answer Evaluation System  
 
-
-
-AI Copychecking is an innovative solution designed to automate the grading process by comparing original answer keys with students' handwritten answer scripts. The project uses advanced NLP techniques, similarity metrics, and OCR technology to provide an accurate grading system. The application is deployed on Azure and features a user-friendly frontend.
-
----
-
-## Workflow
-
-### Step-by-Step Process
-
-1. **Input**:
-   - Users upload two files:
-     - The **original answer key** in PDF format.
-     - The **student's handwritten notes** (image or scanned PDF).
-
-2. **Text Extraction**:
-   - **From PDFs (Typed Text)**:
-     - Text is extracted using the `PyPDF2` library.
-     - This ensures clean and structured text data from the answer key.
-   - **From Handwritten Notes**:
-     - Handwritten text is extracted using the **Gemini OCR API**.
-     - The OCR API processes the image or scanned notes and converts it into machine-readable text.
-
-3. **Text Comparison**:
-   - **Naive Similarity**:
-     - Basic word overlap and matching techniques are applied.
-   - **Context-Based Similarity**:
-     - Tools like `Gensim` and `Word2Vec` are used to measure the semantic similarity between the extracted texts.
-   - **Evaluation Metrics**:
-     - **BLEU** (Bilingual Evaluation Understudy): Measures precision-based similarity.
-     - **ROUGE-N**: Measures recall-based similarity.
-
-4. **Grading System**:
-   - A grading algorithm assigns scores based on threshold values of BLEU, ROUGE-N, and other metrics.
-   - These thresholds can be adjusted for different grading criteria.
-
-5. **Frontend**:
-   - A user-friendly interface allows:
-     - File uploads.
-     - Viewing similarity scores and grades.
-   - Built using **Gradio** or **Hugging Face Spaces**.
-
-6. **Deployment**:
-   - The entire application is hosted on **Azure** for scalability and reliability.
+> A full-stack AI system that performs automated evaluation of student answer sheets based upon model answer key provided.
 
 ---
 
-## Tech Stack
+## 🌐 Overview
 
-### Libraries and Tools
+CopyChecker-AI is an intelligent academic evaluation system that:
 
-1. **NLP Operations**:
-   - [NLTK](https://www.nltk.org/): For basic text processing and tokenization.
-   - [spaCy](https://spacy.io/): For advanced NLP tasks like named entity recognition and dependency parsing.
+- 📄 Accepts Model Answer Key and Student Answer PDFs  
+- 🧠 Extracts text and images using advanced OCR pipelines  
+- 🖼 Performs layout-aware segmentation using YOLOv8  
+- 🔍 Detects structural and semantic similarities  
+- 🤖 Uses LLM reasoning (Groq API) for evaluation scoring  
+- ⚡ Generates structured evaluation results  
 
-2. **Word Similarity Mapping by Context**:
-   - [Gensim](https://radimrehurek.com/gensim/): For topic modeling and semantic similarity.
-   - [Word2Vec](https://code.google.com/archive/p/word2vec/): For word embeddings and context-based similarity.
+The system goes beyond simple text matching by combining:
 
-3. **Text Extraction**:
-   - **Typed Text from PDFs**: [PyPDF2](https://pypi.org/project/PyPDF2/): For extracting text from PDF files.
-   - **Handwritten Notes**: [Gemini OCR API](https://gemini.com/ocr-api): For converting handwritten content into text. (Paid API; ensure you have access.)
+- Computer Vision  
+- OCR  
+- Document Layout Analysis  
+- Large Language Model evaluation  
+- Parallel processing pipelines  
 
-4. **Frontend**:
-   - [Gradio](https://gradio.app/): For building interactive user interfaces.
-   - [Hugging Face Spaces](https://huggingface.co/spaces): Alternative for hosting simple apps.
-
-5. **Backend**:
-   - [Flask](https://flask.palletsprojects.com/): Lightweight web framework for handling backend operations.
-   - [FastAPI](https://fastapi.tiangolo.com/): For building APIs quickly and efficiently.
-
-6. **Deployment**:
-   - [Azure](https://azure.microsoft.com/): For hosting and scaling the application.
+This makes it significantly more advanced than traditional plagiarism detection tools.
 
 ---
 
-## Installation and Setup
+# 🎯 Problem Statement
 
-### Prerequisites
+Traditional answer checkers:
 
-1. Install **Python 3.8+**.
-2. Create an **Azure account**.
-3. Obtain a subscription for the **Gemini OCR API** (if needed).
+- ❌ Rely only on text matching
+- ❌ Fail on scanned handwritten PDFs
+- ❌ Ignore layout structure
+- ❌ Cannot evaluate answer quality
 
-### Steps
+CopyChecker-AI solves this by:
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/ai-copychecking.git
-   cd ai-copychecking
-   ```
-
-2. **Set Up a Virtual Environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure API Keys**:
-   - Create a `config.py` file.
-   - Add your API keys:
-     ```python
-     GEMINI_OCR_API_KEY = "your_api_key_here"
-     ```
-
-5. **Run the Application**:
-   ```bash
-   python app.py
-   ```
-
-6. **Access the Application**:
-   - Open your browser and navigate to `http://localhost:5000`.
+- Converting PDFs into high-resolution images
+- Performing layout-aware segmentation
+- Extracting text via OCR
+- Using LLM-based semantic comparison
+- Producing contextual evaluation output
 
 ---
 
-## Features
+# 🧠 Core Technologies Used
 
-- **Automated Text Extraction**:
-  - Extracts text from PDFs and handwritten notes seamlessly.
-- **Advanced Comparison**:
-  - Uses both naive and context-based similarity techniques.
-- **Customizable Grading System**:
-  - Adjust thresholds for BLEU, ROUGE-N, and other metrics.
-- **Interactive Frontend**:
-  - Simple interface for uploading files and viewing results.
-- **Cloud Deployment**:
-  - Hosted on Azure for high availability and scalability.
+## 🔹 Backend & Frontend
 
----
+- Python
+- Flask (Backend interface)
+- HTML & CSS (Frontend interface)
 
-## Resources
+## 🔹 Computer Vision
 
-- **BLEU Metric**: [BLEU Explained](https://en.wikipedia.org/wiki/BLEU)
-- **ROUGE Metric**: [ROUGE Explained](https://en.wikipedia.org/wiki/ROUGE_(metric))
-- **Gradio**: [Documentation](https://gradio.app/docs/)
-- **Azure Deployment**: [Getting Started](https://learn.microsoft.com/en-us/azure/)
-- **Gemini OCR API**: [API Details](https://gemini.com/ocr-api)
-- **FastAPI**: [Documentation](https://fastapi.tiangolo.com/)
+- OpenCV
+- YOLOv8 (Ultralytics)
+- Image preprocessing with CLAHE
+- Layout-aware segmentation
 
----
+## 🔹 OCR & Document Processing
 
-## Contributing
+- Tesseract OCR
+- pdf2image
+- Poppler
+- PyMuPDF (fitz)
 
-Contributions are welcome! Please follow these steps:
+## 🔹 AI & NLP
 
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add your message here"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. Open a pull request.
+- Groq API (LLM reasoning)
+- LangChain
+
+## 🔹 Database
+
+- Vector Indexing
+- Full-text Search Index
 
 ---
 
-## License
+# ⚙️ Key Engineering Components
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+---
+
+## 1️⃣ PDF Processing Engine
+
+### Features:
+
+- Converts PDFs to 300 DPI images
+- Multi-threaded page conversion
+- Handles scanned and handwritten PDFs
+- Extracts both text and embedded images
+
+---
+
+## 2️⃣ Layout-Aware Segmentation (YOLOv8)
+
+Instead of naive OCR:
+
+- Detects text blocks using YOLO segmentation model
+- Extracts structured regions
+- Preserves logical content flow
+
+This improves:
+
+- OCR accuracy
+- Content alignment
+- Context grouping
+
+---
+
+## 3️⃣ Intelligent OCR Pipeline
+
+### Preprocessing:
+
+- LAB color space conversion
+- CLAHE contrast enhancement
+- RGB normalization
+
+### Extraction:
+
+- Tesseract OCR
+- Page-wise concurrent processing
+
+Improves:
+
+- Low contrast scan handling
+- Handwritten text clarity
+- Reduced OCR noise
+
+---
+
+## 4️⃣ Parallel Page Processing
+
+Uses:
+- `concurrent.futures`
+- Multi-threading for performance
+
+Benefit:
+- Faster evaluation for multi-page PDFs
+- Scalable evaluation architecture
+
+---
+
+## 5️⃣ LLM-Based Semantic Evaluation
+
+Instead of simple similarity scores:
+
+- Sends extracted content to Groq LLM endpoint
+- Uses contextual comparison prompts
+- Produces structured evaluation output
+
+
+This enables:
+
+- Context-aware grading
+- Semantic similarity detection
+- Answer quality assessment
